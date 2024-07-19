@@ -1,8 +1,6 @@
 //TODO:
 //make it a docker image
 //seperate branches of trie vs contains
-//pick better map or slice
-//error handling
 
 package main
 
@@ -31,36 +29,6 @@ const (
 	queryParamsV1Api         = "search.pl?"
 )
 
-func NewTrieNode() *TrieNode {
-	return &TrieNode{children: make(map[rune]*TrieNode)}
-}
-
-func (t *TrieNode) Insert(word string) {
-	current := t
-	for _, char := range word {
-		if _, ok := current.children[char]; !ok {
-			current.children[char] = NewTrieNode()
-		}
-		current = current.children[char]
-	}
-	current.isEndOfWord = true
-}
-
-func (t *TrieNode) SearchPartial(word string) bool {
-	current := t
-	for _, char := range word {
-		if node, ok := current.children[char]; ok {
-			current = node
-			if current.isEndOfWord {
-				return true // Return true if any prefix matches
-			}
-		} else {
-			return false
-		}
-	}
-	return false
-}
-
 // Function to create and return an empty ProductsV1Slice from a ProductV1 struct
 // When declaring a slice field in a struct, if it's not explicitly initialized it will be nil since its a reference type in go lang
 func createEmptyProductV1() ProductV1 {
@@ -71,6 +39,8 @@ func createEmptyProductV1() ProductV1 {
 
 // creating a method on the Product struct to take the json repsonse object and store is as a go struct to process in this go code
 func (productv1 *ProductV1) productStructMethodV1(data []byte) error {
+	//TODO: test if & is necessary, productv1 is already a pointer
+	// err := json.Unmarshal(data, &productv1)
 	err := json.Unmarshal(data, productv1)
 	if err != nil {
 		return fmt.Errorf("failed to unmarshal json: %w", err)
@@ -244,9 +214,10 @@ func searchByProductLogic(searchProductInput *string) processedProductData {
 		//log.Fatal(err)
 		//create and return an empty structToPassToFrontEnd because there was an error when populating productv1
 		return processedProductData{}
+
 	}
 
-	structtopasstofrontend := productv1.checkBadIngredientsProductV1Trie()
+	structtopasstofrontend := productv1.checkBadIngredients()
 
 	for _, e := range structtopasstofrontend.BadIngredients {
 		fmt.Println("Bad ingredient: ", e)
@@ -255,51 +226,39 @@ func searchByProductLogic(searchProductInput *string) processedProductData {
 
 }
 
-// Initializes the Trie with bad ingredients and processes the products to find bad ingredients.
-func (productv1 *ProductV1) checkBadIngredientsProductV1Trie() processedProductData {
+// NOTE: If data is not showing, this is why.
+func (productv1 *ProductV1) checkBadIngredients() processedProductData {
+	fmt.Println("Contains")
 
-	trieRoot := NewTrieNode()
-
-	for _, ingredient := range badIngredientsSlice {
-		trieRoot.Insert(strings.ToLower(ingredient)) // Load bad ingredients into the Trie
-	}
-
-	structtopasstofrontend := processedProductData{}
+	product := processedProductData{}
 
 	for _, prodv1 := range productv1.ProductsV1Slice {
-		if prodv1.IngredientsTextEn == nil || *(prodv1.IngredientsTextEn) == "" || *(prodv1.IngredientsTextEn) == " " {
+		if prodv1.IngredientsTextEn == nil || *(prodv1.IngredientsTextEn) == " " {
 			continue
 		}
-		structtopasstofrontend.ProductFound = true
 
-		//TO DO necessary??
-		ingredients := strings.ToLower(*(prodv1.IngredientsTextEn))
-		ingredientList := strings.Split(ingredients, ",")
+		product.ProductFound = true
 
 		//populate the nutriscore display strings
+		product.NutriscoreDescript = populateNutriScoreDiplay(&prodv1.NutriscoreGrade)
+		product.NutriscoreGrade = prodv1.NutriscoreGrade
+		product.AllIngredients = strings.ToLower(*(prodv1.IngredientsTextEn))
 
-		structtopasstofrontend.NutriscoreDescript = populateNutriScoreDiplay(&prodv1.NutriscoreGrade)
-		structtopasstofrontend.NutriscoreGrade = prodv1.NutriscoreGrade
-
-		structtopasstofrontend.AllIngredients = ingredients
-
-		for _, ingredient := range ingredientList {
-			trimmedIngredient := strings.TrimSpace(ingredient)
-			if trieRoot.SearchPartial(trimmedIngredient) {
-				structtopasstofrontend.BadIngredients = append(structtopasstofrontend.BadIngredients, trimmedIngredient)
+		for _, badIngredient := range badIngredientsSlice {
+			if strings.Contains(product.AllIngredients, badIngredient) {
+				product.BadIngredients = append(product.BadIngredients, badIngredient)
+				//DEBUG
+				// fmt.Println("bad ingredients: ", product.BadIngredients)
 			}
 		}
 		break //break out after getting the first product with english ingredients
-
 	}
 
 	//assign approved field
-	if len(structtopasstofrontend.BadIngredients) == 0 && structtopasstofrontend.ProductFound {
-		if structtopasstofrontend.NutriscoreGrade == "a" || structtopasstofrontend.NutriscoreGrade == "b" || structtopasstofrontend.NutriscoreGrade == "" || structtopasstofrontend.NutriscoreDescript == "unknown" {
-			structtopasstofrontend.Approved = true
-		}
+	if (len(product.BadIngredients) == 0 && product.ProductFound) && (product.NutriscoreGrade == "a" || product.NutriscoreGrade == "b" || product.NutriscoreDescript == "unknown") {
+		product.Approved = true
 	}
-	return structtopasstofrontend
+	return product
 }
 
 func getProduct(write http.ResponseWriter, read *http.Request) {
