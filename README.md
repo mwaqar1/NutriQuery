@@ -36,7 +36,7 @@
 
 - **Failed Optimization with HashMap:** Initially, a hashmap was considered to optimize data retrieval. However, due to the complex and inconsistent nature of the data, including varying ingredient formats and chemical names, exact matches were impractical. The hashmap's inability to support substring matches highlighted its limitations for this application.
 
-- **Data Complexity and Sanitization:** The database's complexity, funded by the EU, posed challenges in data sanitization. The lack of access to sanitized, uniform data made it difficult to ensure consistent processing, especially with products and ingredients having different names and formats.
+- **Data Complexity and Sanitization:** The database's complexity posed challenges in data sanitization. The lack of access to sanitized, uniform data made it difficult to ensure consistent processing, especially with products and ingredients having different names and formats.
 
 - **Language Variability:** Although the application queried for English ingredients, responses frequently included products in other languages, such as French or Spanish. This necessitated additional logic to filter and handle multilingual data effectively.
 
