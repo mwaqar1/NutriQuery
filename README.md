@@ -6,7 +6,7 @@
 
 ## Key Features
 
-- **Product Lookup:** Allows users to search for food products by name or barcode, retrieving detailed information about ingredients, nutritional values, and NutriScore grades.
+- **Product Lookup:** Allows users to search for food products, retrieving detailed information about ingredients, nutritional values, and NutriScore grades.
 
 - **NutriScore Evaluation:** Provides a detailed description of the NutriScore, which ranks products from A (excellent choice) to E (unhealthy choice) based on their nutritional content.
 
