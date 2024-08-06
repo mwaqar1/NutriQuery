@@ -68,11 +68,9 @@
 
 - **Data Normalization:** Learned to normalize and sanitize incoming data to improve consistency and reliability. This involved creating conversion functions and implementing checks for missing or incorrect data fields.
 
-### Nutritional and Environmental Data Analysis
+### Nutritional Data Analysis
 
 - **Nutritional Data Interpretation:** Developed skills in interpreting nutritional information and environmental scores from the API. This required understanding nutritional standards and translating data into meaningful insights for users.
-
-- **Environmental Impact Assessment:** Integrated environmental data, such as Ecoscore, into the application, providing users with insights into the ecological impact of their food choices.
 
 ### Error Handling and Logging
 
