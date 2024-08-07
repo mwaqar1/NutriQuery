@@ -7,6 +7,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -79,6 +80,7 @@ func (productv1 *ProductV1) productStructMethodV1(data []byte) error {
 }
 
 func getRequest(endpointToSearchFor string) ([]byte, error) {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	res, err := http.Get(endpointToSearchFor)
 
 	if err != nil {

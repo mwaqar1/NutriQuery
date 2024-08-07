@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  maham_server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8692"
+    volumes:
+      - ./foodDevApp:/maham_server/foodProductionApp
+    networks:
+      - app-network
+
+networks:
+  app-network:
